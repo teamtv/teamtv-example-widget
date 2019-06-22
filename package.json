@@ -1,0 +1,37 @@
+{
+  "name": "@teamtv/example-widget",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode production --config webpack.prod.config"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teamtv/teamtv-example-widget.git"
+  },
+  "author": "Koen Vossen <koen@teamtv.nl>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/teamtv/teamtv-example-widget/issues"
+  },
+  "homepage": "https://github.com/teamtv/teamtv-example-widget#readme",
+  "dependencies": {
+    "@teamtv/eventstream-client-react": "^1.0.4",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.44",
+    "@babel/core": "^7.0.0-beta.41",
+    "@babel/plugin-transform-modules-umd": "^7.2.0",
+    "@babel/preset-env": "^7.0.0-beta.44",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.6",
+    "css-loader": "^3.0.0",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.35.0",
+    "webpack-cli": "^3.3.4"
+  }
+}
