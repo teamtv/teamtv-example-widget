@@ -8,7 +8,7 @@ const insertWidget = (endpointUrl) => {
 
   const div = document.createElement('div');
   currentScript.parentElement.insertBefore(div, currentScript);
-  ReactDOM.render(<App endpointUrl={endpointUrl} />, div);
+  ReactDOM.render(<Widget endpointUrl={endpointUrl} />, div);
 };
 
 export {insertWidget};
