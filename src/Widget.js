@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { StatsProvider, StatsConsumer } from '@teamtv/eventstream-client-react';
 
-import styles from './App.css';
+import styles from './Widget.css';
 
 const formatTime = function (sec) {
   const sec_num = parseInt(sec, 10); // don't forget the second param
@@ -36,7 +36,6 @@ const Score = () => {
 };
 
 const PeriodLog = ({label, state, goals}) => {
-  console.log(styles);
   return (
     <Fragment>
       <div>Start period {label}</div>
@@ -75,4 +74,4 @@ const Widget = ({endpointUrl}) => (
   </StatsProvider>
 );
 
-export default Widget;
+export {Widget};
