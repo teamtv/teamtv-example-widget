@@ -8,6 +8,10 @@ Everyone wants to show some interesting information to their fans. To include su
 
 This repository contains all the boilerplate required to build a widget. It also contains an example of a widget to get you started. The only thing you need to do is build it.
 
+Make sure you install a dependencies:
+```bash
+npm install
+```
 
 ## Creating your own widget
 
