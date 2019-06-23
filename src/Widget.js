@@ -3,6 +3,19 @@ import { StatsProvider, StatsConsumer } from '@teamtv/eventstream-client-react';
 
 import styles from './Widget.css';
 
+if (!Object.entries) {
+  // polyfill object entries
+  Object.entries = function (obj) {
+    const ownProps = Object.keys(obj),
+      i = ownProps.length,
+      resArray = new Array(i); // preallocate the Array
+    while (i--)
+      resArray[i] = [ownProps[i], obj[ownProps[i]]];
+
+    return resArray;
+  };
+}
+
 const formatTime = function (sec) {
   const sec_num = parseInt(sec, 10); // don't forget the second param
 //        let hours   = Math.floor(sec_num / 3600);
