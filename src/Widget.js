@@ -171,7 +171,6 @@ const PeriodLog = ({label, state, goals}) => {
         <div className="cell">Start Clock</div>
         <div className="cell">-</div>
         <div className="cell" />
-        <div className="cell" />
       </div>
       {goals.map(({id, score, type, time: {time}, person, team}) => {
         const personName = person ? `${person.firstName} ${person.lastName}` : <i>unknown</i>;
@@ -191,7 +190,6 @@ const PeriodLog = ({label, state, goals}) => {
           <div className="cell" />
           <div className="cell">End Clock</div>
           <div className="cell">-</div>
-          <div className="cell" />
           <div className="cell" />
         </div>
       )}
