@@ -23,6 +23,14 @@ const groupBy = function(xs, key) {
   }, {});
 };
 
+const groupCount = (xs, key) => {
+  const groups = groupBy(xs, key);
+  for(const key of Object.keys(groups)) {
+    groups[key] = groups[key].length;
+  }
+  return groups;
+};
+
 const Score = () => {
   return (
     <StatsConsumer types={["score"]}>
@@ -42,6 +50,70 @@ const Score = () => {
   );
 };
 
+const GoalTypeStats = () => {
+  return (
+    <StatsConsumer types={["goals"]}>
+    {({match, goals}) => {
+      if (!match) {
+        return <div>loading...</div>;
+      }
+      const homeGoals = goals.filter(({teamId}) => teamId === match.homeTeam.teamId);
+      const awayGoals = goals.filter(({teamId}) => teamId === match.awayTeam.teamId);
+
+      const homeGoalsPerType = groupCount(homeGoals, 'type');
+      const awayGoalsPerType = groupCount(awayGoals, 'type');
+
+
+      return (
+        <div id="table1">
+          <div className="row header-row">
+            <div className="cell">{match.homeTeam.name}</div>
+            <div className="cell" />
+            <div className="cell">{match.awayTeam.name}</div>
+          </div>
+          <div className="row">
+            <div className="cell">{homeGoals.length}</div>
+            <div className="cell">Total</div>
+            <div className="cell">{awayGoals.length}</div>
+          </div>
+          <div className="row">
+            <div className="cell">{homeGoalsPerType['LONG'] || 0}</div>
+            <div className="cell">Long Shot</div>
+            <div className="cell">{awayGoalsPerType['LONG'] || 0}</div>
+          </div>
+          <div className="row">
+            <div className="cell">{homeGoalsPerType['SHORT'] || 0}</div>
+            <div className="cell">Short Shot</div>
+            <div className="cell">{awayGoalsPerType['SHORT'] || 0}</div>
+          </div>
+          <div className="row">
+            <div className="cell">{homeGoalsPerType['RUNNING-IN'] || 0}</div>
+            <div className="cell">Running In</div>
+            <div className="cell">{awayGoalsPerType['RUNNING-IN'] || 0}</div>
+          </div>
+          <div className="row">
+            <div className="cell">{homeGoalsPerType['FREE-BALL'] || 0}</div>
+            <div className="cell">Free Pass</div>
+            <div className="cell">{awayGoalsPerType['FREE-BALL'] || 0}</div>
+          </div>
+          <div className="row">
+            <div className="cell">{homeGoalsPerType['PENALTY'] || 0}</div>
+            <div className="cell">Penalty</div>
+            <div className="cell">{awayGoalsPerType['PENALTY'] || 0}</div>
+          </div>
+          <div className="row">
+            <div className="cell">{homeGoalsPerType['undefined'] || 0}</div>
+            <div className="cell">Other</div>
+            <div className="cell">{awayGoalsPerType['undefined'] || 0}</div>
+          </div>
+        </div>
+      )
+
+    }}
+    </StatsConsumer>
+  );
+};
+
 const TeamPlayerStats = ({goals, label}) => {
   const goalsPerPerson = groupBy(goals, 'personId');
   const entries = Object.entries(goalsPerPerson);
@@ -55,7 +127,7 @@ const TeamPlayerStats = ({goals, label}) => {
           <div className="cell">Score</div>
         </div>
       {entries.map(([personId, goals]) => {
-        let name = "n/a";
+        let name = <i>unknown</i>;
         if (!!goals[0].person) {
           name = `${goals[0].person.firstName} ${goals[0].person.lastName}`;
         }
@@ -73,7 +145,7 @@ const TeamPlayerStats = ({goals, label}) => {
 
 const PlayerStats = () => {
   return (
-    <StatsConsumer types={["period", "goals"]}>
+    <StatsConsumer types={["goals"]}>
       {({match, goals}) => {
         if (!match) {
           return <div>loading...</div>;
@@ -102,12 +174,12 @@ const PeriodLog = ({label, state, goals}) => {
         <div className="cell" />
       </div>
       {goals.map(({id, score, type, time: {time}, person, team}) => {
-        const personName = person ? `${person.firstName} ${person.lastName}` : '-';
+        const personName = person ? `${person.firstName} ${person.lastName}` : <i>unknown</i>;
         return (
           <div key={id} className="row">
             <div className="cell">{score.home} - {score.away}</div>
             <div className="cell">{formatTime(time)}</div>
-            <div className="cell">{type}</div>
+            <div className="cell">{type || <i>unknown</i>}</div>
             <div className="cell">{personName}</div>
             <div className="cell">{team.name}</div>
           </div>
@@ -151,6 +223,7 @@ const MatchLog = () => {
 
 const Widget = ({endpointUrl}) => (
   <StatsProvider endpointUrl={endpointUrl}>
+    <GoalTypeStats />
     <PlayerStats />
     {/*<Score />*/}
     <MatchLog/>
