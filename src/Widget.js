@@ -65,13 +65,16 @@ const Score = () => {
 
 const GoalTypeStats = () => {
   return (
-    <StatsConsumer types={["goals"]}>
-    {({match, goals}) => {
+    <StatsConsumer types={["goals", "substitutions"]}>
+    {({match, goals, substitutions}) => {
       if (!match) {
         return <div>loading...</div>;
       }
       const homeGoals = goals.filter(({teamId}) => teamId === match.homeTeam.teamId);
       const awayGoals = goals.filter(({teamId}) => teamId === match.awayTeam.teamId);
+      
+      const homeSubstitutions = substitutions.filter(({teamId}) => teamId === match.homeTeam.teamId);
+      const awaySubstitutions = substitutions.filter(({teamId}) => teamId === match.awayTeam.teamId);
 
       const homeGoalsPerType = groupCount(homeGoals, 'type');
       const awayGoalsPerType = groupCount(awayGoals, 'type');
@@ -118,6 +121,11 @@ const GoalTypeStats = () => {
             <div className="cell">{homeGoalsPerType['undefined'] || 0}</div>
             <div className="cell">Other</div>
             <div className="cell">{awayGoalsPerType['undefined'] || 0}</div>
+          </div>
+          <div className="row">
+            <div className="cell">{homeSubstitutions.length}</div>
+            <div className="cell">Substitutions</div>
+            <div className="cell">{awaySubstitutions.length}</div>
           </div>
         </div>
       )
@@ -175,7 +183,40 @@ const PlayerStats = () => {
   );
 };
 
-const PeriodLog = ({label, state, goals}) => {
+const PeriodLog = ({label, state, goals, substitutions}) => {
+  const events = goals.map(
+    ({id, score, type, time: {time}, person, team}) => {
+      const personName = person ? `${person.firstName} ${person.lastName}` : <i>unknown</i>;
+      return {
+        time,
+        component: (
+          <div key={id} className="row">
+            <div className="cell">{score.home} - {score.away}</div>
+            <div className="cell">{formatTime(time)}</div>
+            <div className="cell">{type || <i>unknown</i>}</div>
+            <div className="cell">{personName}</div>
+            <div className="cell">{team.name}</div>
+          </div>
+        )
+      };
+    }
+  ).concat(substitutions.map(
+    ({id, time: {time}, inPerson, outPerson, team}) => {
+      return {
+        time,
+        component: (
+          <div key={id} className="row">
+            <div className="cell" />
+            <div className="cell">{formatTime(time)}</div>
+            <div className="cell">Substitution</div>
+            <div className="cell">IN: {inPerson.firstName} {inPerson.lastName} OUT: {outPerson.firstName} {outPerson.lastName}</div>
+            <div className="cell">{team.name}</div>
+          </div>
+        )
+      };
+    }
+  ));
+  events.sort(({time: timeA}, {time: timeB}) => timeA - timeB);
   return (
     <Fragment>
       <div className="row">
@@ -185,18 +226,7 @@ const PeriodLog = ({label, state, goals}) => {
         <div className="cell">-</div>
         <div className="cell" />
       </div>
-      {goals.map(({id, score, type, time: {time}, person, team}) => {
-        const personName = person ? `${person.firstName} ${person.lastName}` : <i>unknown</i>;
-        return (
-          <div key={id} className="row">
-            <div className="cell">{score.home} - {score.away}</div>
-            <div className="cell">{formatTime(time)}</div>
-            <div className="cell">{type || <i>unknown</i>}</div>
-            <div className="cell">{personName}</div>
-            <div className="cell">{team.name}</div>
-          </div>
-        );
-      })}
+      {events.map(({component}) => component)}
       {(state === "ENDED") && (
         <div className="row">
           <div className="cell" />
@@ -212,8 +242,8 @@ const PeriodLog = ({label, state, goals}) => {
 
 const MatchLog = () => {
   return (
-    <StatsConsumer types={["period", "goals"]}>
-      {({match, period, goals}) => {
+    <StatsConsumer types={["period", "goals", "substitutions"]}>
+      {({match, period, goals, substitutions}) => {
         if (!match) {
           return <div>loading...</div>;
         }
@@ -221,8 +251,20 @@ const MatchLog = () => {
           <Fragment>
             <span className="log">Log:</span>
             <div id="table">
-              {(period.period1 !== "NOT-STARTED") && <PeriodLog label='1' state={period.period1} goals={goals.filter(({time: {period}}) => period == '1')} />}
-              {(period.period2 !== "NOT-STARTED") && <PeriodLog label='2' state={period.period2} goals={goals.filter(({time: {period}}) => period == '2')} />}
+              {(period.period1 !== "NOT-STARTED") && (
+                <PeriodLog
+                  label='1'
+                  state={period.period1}
+                  goals={goals.filter(({time: {period}}) => period == '1')}
+                  substitutions={substitutions.filter(({time: {period}}) => period == '1')}
+                />)}
+              {(period.period2 !== "NOT-STARTED") && (
+                <PeriodLog
+                  label='2'
+                  state={period.period2}
+                  goals={goals.filter(({time: {period}}) => period == '2')}
+                  substitutions={substitutions.filter(({time: {period}}) => period == '2')}
+                />)}
             </div>
           </Fragment>
         )
