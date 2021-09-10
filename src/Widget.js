@@ -35,7 +35,7 @@ const MatchRowInner = ({homeTeam, awayTeam, children}) => {
 const FullTimeContent = ({homeScore, awayScore}) => (
   <div className={styles.scoreBar}>
     <div>{homeScore}</div>
-    <div>
+    <div className={styles.fullTime}>
       VOLLZEIT
     </div>
     <div>{awayScore}</div>
@@ -56,7 +56,7 @@ const InProgressContent = ({homeScore, awayScore, period}) => (
 
 const MatchRow = ({endpointUrl}) => {
   return (
-    <StatsProvider endpointUrl={endpointUrl} periodCount={4}>
+    <StatsProvider endpointUrl={endpointUrl} options={{periodCount: 4, refreshInterval: 30}}>
       <StatsConsumer types={["score", "period"]}>
         {({match, period, score}) => {
           if (!match) {
@@ -105,10 +105,18 @@ const MatchRow = ({endpointUrl}) => {
   );
 };
 
-const Widget = ({endpointUrls}) => {
-  return endpointUrls.map((endpointUrl) => (
-    <MatchRow endpointUrl={endpointUrl} key={endpointUrl} />
-  ));
+const Widget = ({title, subtitle, endpointUrls}) => {
+  return (
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div>{title}</div>
+        <div>{subtitle}</div>
+      </div>
+      {endpointUrls.map((endpointUrl) => (
+       <MatchRow endpointUrl={endpointUrl} key={endpointUrl} />
+      ))}
+    </div>
+  );
 };
 
 export {Widget};
