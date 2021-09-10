@@ -16,62 +16,99 @@ const formatTime = function (sec) {
   return minutes+':'+seconds;
 };
 
-const Score = () => {
+const MatchRowInner = ({homeTeam, awayTeam, children}) => {
   return (
-    <StatsConsumer types={["score"]}>
-      {({match, score}) => {
-        if (!match) {
-          return <div>loading...</div>;
-        }
-        return (
-          <div>
-            <div>{match.homeTeam.name} - {match.awayTeam.name}</div>
-            <div>{score.home} - {score.away}</div>
-          </div>
-        )
-      }
-      }
-    </StatsConsumer>
-  );
+    <div className={styles.matchRow}>
+      <div className={styles.teamName}>
+        {homeTeam}
+      </div>
+      <div className={styles.center}>
+        {children}
+      </div>
+      <div className={styles.teamName}>
+        {awayTeam}
+      </div>
+    </div>
+  )
 };
 
-const PeriodLog = ({label, state, goals}) => {
-  return (
-    <Fragment>
-      <div>Start period {label}</div>
-      {goals.map(({id, score, time: {time}, person, team}) => {
-        const personName = person ? `${person.firstName} ${person.lastName}` : 'unknown';
-        return <div key={id} className={styles.row}>{score.home} - {score.away} {formatTime(time)} {personName} {team.name}</div>
-      })}
-      {(state === "ENDED") && <div>End period {label}</div>}
-    </Fragment>
-  );
-};
-
-const MatchLog = () => {
-  return (
-    <StatsConsumer types={["period", "goals"]}>
-      {({match, period, goals}) => {
-        if (!match) {
-          return <div>loading...</div>;
-        }
-        return (
-          <div>
-            {(period.period1 !== "NOT-STARTED") && <PeriodLog label='1' state={period.period1} goals={goals.filter(({time: {period}}) => period == '1')} />}
-            {(period.period2 !== "NOT-STARTED") && <PeriodLog label='2' state={period.period2} goals={goals.filter(({time: {period}}) => period == '2')} />}
-          </div>
-        )
-      }
-      }
-    </StatsConsumer>
-  );
-};
-
-const Widget = ({endpointUrl}) => (
-  <StatsProvider endpointUrl={endpointUrl}>
-    <Score />
-    <MatchLog/>
-  </StatsProvider>
+const FullTimeContent = ({homeScore, awayScore}) => (
+  <div className={styles.scoreBar}>
+    <div>{homeScore}</div>
+    <div>
+      VOLLZEIT
+    </div>
+    <div>{awayScore}</div>
+  </div>
 );
+
+const InProgressContent = ({homeScore, awayScore, period}) => (
+  <div className={styles.scoreBar}>
+    <div>{homeScore}</div>
+    <div>
+      <div className={styles.periodTitle}>{period.periodId}st zeitraum</div>
+      <div className={styles.time}>'{parseInt(period.time / 60)}</div>
+    </div>
+    <div>{awayScore}</div>
+  </div>
+);
+
+
+const MatchRow = ({endpointUrl}) => {
+  return (
+    <StatsProvider endpointUrl={endpointUrl} periodCount={4}>
+      <StatsConsumer types={["score", "period"]}>
+        {({match, period, score}) => {
+          if (!match) {
+            return null;
+          }
+          let content = null;
+
+          switch (true)
+          {
+            case period.period1.state === "NOT-STARTED":
+              const scheduledAt = new Date(match.scheduledAt);
+              content = (
+                <div className={styles.upcomingTime}>
+                  {formatTime(scheduledAt.getHours() * 60 + scheduledAt.getMinutes())}
+                </div>
+              );
+              break;
+            case period.period4.state === "ENDED":
+              content = (
+                <FullTimeContent homeScore={score.home} awayScore={score.away} />
+              );
+              break;
+
+            default:
+              let currentPeriod;
+              for(const periodId of [1, 2, 3, 4])
+              {
+                if (period[`period${periodId}`].state !== "ENDED") {
+                  currentPeriod = {periodId, ...period[`period${periodId}`]};
+                  break;
+                }
+              }
+              content = (
+                <InProgressContent homeScore={score.home} awayScore={score.away} period={currentPeriod} />
+              );
+          }
+
+          return (
+            <MatchRowInner homeTeam={match.homeTeam.name} awayTeam={match.awayTeam.name}>
+              {content}
+            </MatchRowInner>
+          )
+        }}
+      </StatsConsumer>
+    </StatsProvider>
+  );
+};
+
+const Widget = ({endpointUrls}) => {
+  return endpointUrls.map((endpointUrl) => (
+    <MatchRow endpointUrl={endpointUrl} key={endpointUrl} />
+  ));
+};
 
 export {Widget};
