@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/teamtv/teamtv-example-widget#readme",
   "dependencies": {
-    "@teamtv/eventstream-client-react": "^1.0.12",
+    "@teamtv/eventstream-client-react": "^1.0.13",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"
   },
